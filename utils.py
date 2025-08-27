@@ -6,9 +6,31 @@ from openai import OpenAI
 base_url = "https://api.aimlapi.com/v1"
 
 # api key
-api_key = "970c752628f64a6bb7726afd346c61af"
+API_KEY = "970c752628f64a6bb7726afd346c61af"
 
-api = OpenAI(api_key=api_key, base_url=base_url)
+api = OpenAI(api_key=API_KEY, base_url=base_url)
+
+def get_response(user_prompt: str, frequency_penalty: float = 0.5):
+    response = requests.post(
+    "https://api.aimlapi.com/v1/chat/completions",
+        headers={
+            "Content-Type":"application/json",
+
+            # Insert your AIML API Key instead of <YOUR_AIMLAPI_KEY>:
+            "Authorization": f"Bearer {API_KEY}",
+            "Content-Type":"application/json"
+        },
+        json={
+            "model":"openai/gpt-5-chat-latest",
+            "messages":[
+                {
+                    "role":"user", "content":user_prompt
+                }
+            ],
+            "temperature" : 1.0, "max_tokens" : 2000, "frequency_penalty": frequency_penalty
+        }
+    )
+    return response
 
 def generate_learning_content(learning_topic: str, learning_category: str, learning_subcategory):
     user_prompt = None
@@ -80,25 +102,7 @@ def generate_learning_content(learning_topic: str, learning_category: str, learn
             **Examples:**  
             """
 
-    response = requests.post(
-    "https://api.aimlapi.com/v1/chat/completions",
-        headers={
-            "Content-Type":"application/json",
-
-            # Insert your AIML API Key instead of <YOUR_AIMLAPI_KEY>:
-            "Authorization":"Bearer 970c752628f64a6bb7726afd346c61af",
-            "Content-Type":"application/json"
-        },
-        json={
-            "model":"openai/gpt-5-chat-latest",
-            "messages":[
-                {
-                    "role":"user", "content":user_prompt
-                }
-            ],
-            "temperature" : 1.0, "max_tokens" : 1500,
-        }
-    )
+    response = get_response(user_prompt, frequency_penalty=0.5)
 
     data = response.json()
     output_text = data['choices'][0]['message']['content']
@@ -159,25 +163,7 @@ def generate_practice_content(topic, category, subcategory, num_questions, diffi
 
         Do not include English translations, explanations, or extra text outside the dictionary.
         """
-    response = requests.post(
-    "https://api.aimlapi.com/v1/chat/completions",
-    headers={
-        "Content-Type":"application/json",
-
-        # Insert your AIML API Key instead of <YOUR_AIMLAPI_KEY>:
-        "Authorization":"Bearer 970c752628f64a6bb7726afd346c61af",
-        "Content-Type":"application/json"
-    },
-    json={
-        "model":"openai/gpt-5-chat-latest",
-        "messages":[
-            {
-                "role":"user", "content":user_prompt
-            }
-        ],
-        "temperature" : 1.0, "frequency_penalty": 1.0,
-    }
-)
+    response = get_response(user_prompt, frequency_penalty=0.5)
     
     data = response.json()
     output_text = data['choices'][0]['message']['content']
@@ -230,25 +216,9 @@ def evaluate_response(topic, category, subcategory, response: dict):
         "feedback" : "feedback"
         }}
     """
-    response = requests.post(
-    "https://api.aimlapi.com/v1/chat/completions",
-    headers={
-        "Content-Type":"application/json",
 
-        # Insert your AIML API Key instead of <YOUR_AIMLAPI_KEY>:
-        "Authorization":"Bearer 970c752628f64a6bb7726afd346c61af",
-        "Content-Type":"application/json"
-    },
-    json={
-        "model":"openai/gpt-5-chat-latest",
-        "messages":[
-            {
-                "role":"user", "content":user_prompt
-            }
-        ],
-        "temperature" : 1.0, "frequency_penalty": 1.0,
-    }
-)
+    response = get_response(user_prompt, frequency_penalty=0.2)
+
     data = response.json()
     output_text = data['choices'][0]['message']['content']
     cleaned = re.sub(r"```(?:json|python)?", "", output_text)
@@ -291,25 +261,8 @@ def generate_mcqs(topic, category, subcategory, num_questions, difficulty):
     Do not include English translations, explanations, or extra text outside the dictionary.
 
 """
-    response = requests.post(
-    "https://api.aimlapi.com/v1/chat/completions",
-    headers={
-        "Content-Type":"application/json",
-
-        # Insert your AIML API Key instead of <YOUR_AIMLAPI_KEY>:
-        "Authorization":"Bearer 970c752628f64a6bb7726afd346c61af",
-        "Content-Type":"application/json"
-    },
-    json={
-        "model":"openai/gpt-5-chat-latest",
-        "messages":[
-            {
-                "role":"user", "content":user_prompt
-            }
-        ],
-        "temperature" : 1.0, "max_tokens" : 2000,
-    }
-)
+    response = get_response(user_prompt, frequency_penalty=0.0)
+    
     data = response.json()
     output_text = data['choices'][0]['message']['content']
     cleaned = re.sub(r"```(?:json|python)?", "", output_text)
